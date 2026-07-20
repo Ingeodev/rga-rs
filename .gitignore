@@ -1,0 +1,7 @@
+target/
+.idea/
+rga/assets/output_*.png
+*.swp
+*.swo
+*~
+.DS_Store

@@ -1,0 +1,1 @@
+[] Revisar los errores en los metodos rotate y crop

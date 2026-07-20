@@ -1,0 +1,17 @@
+[package]
+name = "rga"
+version = "0.1.0"
+edition = "2024"
+
+[features]
+hardware-tests = []
+
+[dependencies]
+rga-sys = { path = "../rga-sys" }
+thiserror = "2.0.19"
+
+
+
+[dev-dependencies]
+image = "0.25"
+anyhow = "1.0.104"

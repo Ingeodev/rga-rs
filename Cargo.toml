@@ -1,0 +1,3 @@
+[workspace]
+members = ["rga-sys", "rga"]
+resolver = "2"

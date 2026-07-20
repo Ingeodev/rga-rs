@@ -1,0 +1,12 @@
+[package]
+name = "rga-sys"
+version = "0.1.0+rga1.10.5"
+edition = "2024"
+links = "rga"
+
+[lib]
+crate-type = ["rlib"]
+
+[build-dependencies]
+bindgen = "0.72"
+pkg-config = "0.3"
