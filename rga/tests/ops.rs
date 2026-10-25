@@ -121,3 +121,62 @@ fn rotate_90_swaps_dimensions_correctly() {
 
     assert!(tight.iter().any(|&b| b != 0), "dst quedó vacío tras rotate");
 }
+
+/// Pipeline clave del futuro live-svc (F6): RGB → UYVY 4:2:2 packed →
+/// NV12 4:2:0 semi-planar, pasando por el espacio de color explícito.
+/// Verifica plano Y (luminancia vs BT601 limit del sample RGB) y plano UV.
+#[test]
+fn convert_color_rgb_to_uyvy_then_to_nv12() {
+    let (src_bytes, w, h) = load_sample();
+
+    // ---- Paso A: RGB → UYVY (BT601 limit, el espacio típico de cámara) ----
+    let rgb_layout = make_layout(w, h, PixelFormat::Rgb888);
+    let rgb_src = RgaBuffer::import_virtual(&src_bytes, rgb_layout, PixelFormat::Rgb888)
+        .expect("import_virtual (RGB) falló");
+
+    let uyvy_layout = make_layout(w, h, PixelFormat::Uyvy422);
+    let mut uyvy_bytes = vec![0u8; uyvy_layout.hstride as usize * uyvy_layout.wstride as usize * 2];
+    let uyvy_dst = RgaBuffer::import_virtual_mut(&mut uyvy_bytes, uyvy_layout, PixelFormat::Uyvy422)
+        .expect("import_virtual_mut (UYVY) falló");
+
+    rga::convert_color_with_mode(
+        &rgb_src, &uyvy_dst,
+        PixelFormat::Rgb888, PixelFormat::Uyvy422,
+        rga::ColorSpaceMode::RgbToYuvBt601Limit,
+    ).expect("RGB → UYVY falló");
+    drop(rgb_src);
+
+    // ---- Paso B: UYVY → NV12 (el paso real de F6, YUV → YUV) ----
+    let nv12_layout = ImageLayout::tight(w, h).aligned(PixelFormat::Nv12);
+    let mut nv12_bytes = vec![0u8; nv12_layout.hstride as usize * nv12_layout.wstride as usize * 3 / 2];
+    let nv12_dst = RgaBuffer::import_virtual_mut(&mut nv12_bytes, nv12_layout, PixelFormat::Nv12)
+        .expect("import_virtual_mut (NV12) falló");
+
+    rga::convert_color_with_mode(
+        &uyvy_dst, &nv12_dst,
+        PixelFormat::Uyvy422, PixelFormat::Nv12,
+        rga::ColorSpaceMode::YuvBt601LimitRange,
+    ).expect("UYVY → NV12 falló");
+
+    // ---- Verificación sobre los planos del NV12 ----
+    let ws = nv12_layout.wstride as usize;
+    let hs = nv12_layout.hstride as usize;
+    let data = nv12_dst.bytes(); // buffer respaldado por CPU: slice completo
+    let (y_plane, uv_plane) = data.split_at(ws * hs);
+
+    assert!(y_plane.iter().any(|&b| b != 8 && b != 0), "plano Y vacío tras UYVY→NV12");
+    assert!(uv_plane.iter().any(|&b| b != 0x80 && b != 0), "plano UV vacío (neutro) tras UYVY→NV12");
+
+    // Spot-check de luminancia: el primer pixel del sample RGB debe mapear a
+    // Y = 16 + 0.257*R + 0.504*G + 0.098*B (BT601 limit), tolerancia ±3.
+    let r = src_bytes[0] as f32;
+    let g = src_bytes[1] as f32;
+    let b = src_bytes[2] as f32;
+    let y_expect = 16.0 + 0.257 * r + 0.504 * g + 0.098 * b;
+    let y0 = y_plane[0] as f32;
+    assert!(
+        (y0 - y_expect).abs() <= 3.0,
+        "Y[0]={} != BT601 limit esperado {} (delta {})",
+        y0, y_expect, (y0 - y_expect).abs()
+    );
+}

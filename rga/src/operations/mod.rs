@@ -10,6 +10,8 @@ pub mod resize_into_rect;
 pub use resize::resize;
 pub use crop::crop;
 pub use convert_color::convert_color;
+pub use convert_color::convert_color_with_mode;
+pub use convert_color::ColorSpaceMode;
 pub use rotate::rotate;
 pub use rotate::Rotation;
 pub use flip::flip;

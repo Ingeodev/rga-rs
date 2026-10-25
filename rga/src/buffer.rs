@@ -106,8 +106,17 @@ impl<'a> RgaBuffer<'a> {
     pub fn format(&self) -> PixelFormat { self.format }
 
     /// Tamaño de buffer necesario para este layout y formato.
+    ///
+    /// Para formatos semi-planarios (NV12/NV21) incluye ambos "planos":
+    /// el buffer completo es `wstride * hstride * 1.5`
+    /// (Y a 1 byte/pixel + uv intercalado a media altura).
     pub fn buffer_size(&self) -> usize {
-        (self.layout.hstride * self.layout.wstride * self.format.bytes_per_pixel()) as usize
+        let base = (self.layout.hstride * self.layout.wstride) as usize;
+        match self.format {
+            // NV12: Y plano (base bytes) + uv intercalado (base / 2 bytes)
+            fmt if fmt.is_semiplanar() => base * 3 / 2,
+            _ => base * self.format.bytes_per_pixel() as usize,
+        }
     }
 }
 
