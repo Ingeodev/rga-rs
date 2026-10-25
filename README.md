@@ -78,6 +78,9 @@ rga::convert_color_with_mode(&src, &dst,
 
 **Estado:** gaps para F6 cerrados (commit `bbbbee5`: `Uyvy422`,
 `ColorSpaceMode`/`convert_color_with_mode`, fix de `buffer_size()` para
-semi-planarios). Tests 6/6 en placa.
+semi-planarios). Tests 6/6 en placa. **HIL del gap 3 PASS** (2026-10-25:
+UYVY→NV12 con dma-buf reales de la cámara vía `import_dma_fd`, fd→fd
+determinista — evidencia en `assets/tests/hil-uyvy-nv12/`, spike en
+`spikes/hil-uyvy-nv12/`).
 > ⚠️ En esta placa (3.8 GB RAM) cargo siempre con `-j 2` — el paralelismo por
 > defecto agota la RAM y congela el sistema.

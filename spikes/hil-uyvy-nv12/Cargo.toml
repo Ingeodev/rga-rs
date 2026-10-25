@@ -1,0 +1,18 @@
+[package]
+name = "hil-uyvy-nv12"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# Spike HIL del gap 3 del PLAN de afora-live-svc-rs (§4.1): validar la
+# conversión UYVY→NV12 de rga-rs con **dma-buf reales de la cámara**
+# (camino F6: import_dma_fd + convert_color_with_mode). Prototipo
+# desechable: no es parte de la crate ni de sus tests unitarios.
+# Evidencia: ../assets/tests/hil-uyvy-nv12/
+
+[workspace] # standalone: no es miembro del workspace de rga-rs
+
+[dependencies]
+edgefirst-v4l2 = "0.2"
+libc = "0.2"
+rga = { path = "../../rga" }

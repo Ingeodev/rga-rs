@@ -1,0 +1,18 @@
+== HIL UYVY→NV12 (rga-rs import_dma_fd) — cámara IMX662/rkcif ==
+[1] S_FMT: 1920x1080 stride=3840 sizeimage=4147200
+[1] EXPBUF: src fd=5 dst fd=6 (exp_name videobuf2_cma_sg esperado)
+    src: exp_name:	videobuf2_cma_sg
+    dst: exp_name:	videobuf2_cma_sg
+[1] STREAMON con 1 buffer (slot 1 fuera de la cola = dst propio)
+[2] frame real: slot=0 seq=0
+[2] fingerprint del src (mmap CPU): FNV-1a = aa6cbe21ca81a27d
+[3] rga-rs import_dma_fd(src UYVY): OK
+[3] conversión A (src fd → dst virtual): OK
+[3] NV12 virtual: plano Y no-plano=true plano UV no-neutro=true FNV-1a=06d90d315b17ba5f
+[3] referencia CPU parche 64x64: Y max|Δ|=0 UV max|Δ|=0 (filas pares) · UV filas impares max|Δ|=2
+[4] conversión B (src fd → dst dma-buf): OK (RGA escribió el dma-buf que en F6a lee MPP)
+[4] NV12 dma-buf: plano Y no-plano=true plano UV no-neutro=true FNV-1a=3e077f117351725f
+[4] determinismo fd→fd vs fd→virtual (checksum): true
+VEREDICTO HIL: PASS — gap 3 CERRADO
+limpieza: STREAMOFF + REQBUFS(0) + munmap — OK
+rga_api version 1.10.5_[11]
